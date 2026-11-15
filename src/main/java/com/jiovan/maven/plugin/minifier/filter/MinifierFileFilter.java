@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Unikue Ltd. All rights reserved.
+ * Copyright (c) 2026 Jiovan Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.unikue.mavenplugin.preferminimum.filter;
+package com.jiovan.maven.plugin.minifier.filter;
 
 
 import java.io.File;
@@ -39,17 +39,17 @@ import jakarta.annotation.Nullable;
  *
  * @reference "https://github.com/aperto/sourceurl-resourcefilter"
  */
-@Component(role = MavenFileFilter.class, hint = MinimumFileFilter.FILTER_NAME, description = "Packages minimum css/js files instead of original ones")
+@Component(role = MavenFileFilter.class, hint = MinifierFileFilter.FILTER_NAME, description = "Packages minimum css/js files instead of original ones")
 @SuppressWarnings({"unused", "JavadocDeclaration", "JavadocLinkAsPlainText"})
-public class MinimumFileFilter extends DefaultMavenFileFilter {
+public class MinifierFileFilter extends DefaultMavenFileFilter {
     /**
-     * The value is {@code "preferMinimumFileFilter"}
+     * The value is {@code "minifierFileFilter"}
      */
-    static final String FILTER_NAME = "preferMinimumFileFilter";    // $NON-NLS-1$
+    static final String FILTER_NAME = "minifierFileFilter";    // $NON-NLS-1$
     private static final String DOT_MIN = ".min";    // $NON-NLS-1$
     private static final String HYPHEN_MIN = "-min";    // $NON-NLS-1$
 
-    public MinimumFileFilter(@Nonnull BuildContext context) {
+    public MinifierFileFilter(@Nonnull BuildContext context) {
         super(context);
     }
 

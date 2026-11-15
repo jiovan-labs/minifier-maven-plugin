@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Unikue Ltd. All rights reserved.
+ * Copyright (c) 2026 Jiovan Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.unikue.mavenplugin.preferminimum.filter;
+package com.jiovan.maven.plugin.minifier.filter;
 
 
 import java.util.Collections;
@@ -43,19 +43,19 @@ import jakarta.annotation.Nullable;
  *
  * @reference "https://maven.apache.org/plugins/maven-resources-plugin/examples/custom-resource-filters.html"
  */
-@Component(role = MavenResourcesFiltering.class, hint = MinimumResourceFilter.FILTER_NAME, description = "Packages minimum css/js resources instead of original ones")
+@Component(role = MavenResourcesFiltering.class, hint = MinifierResourceFilter.FILTER_NAME, description = "Packages minimum css/js resources instead of original ones")
 @SuppressWarnings({"unused", "JavadocDeclaration", "JavadocLinkAsPlainText"})
-public class MinimumResourceFilter extends AbstractLogEnabled implements MavenResourcesFiltering, Initializable {
+public class MinifierResourceFilter extends AbstractLogEnabled implements MavenResourcesFiltering, Initializable {
     /**
-     * The value is {@code "preferMinimumResourceFilter"}
+     * The value is {@code "minifierResourceFilter"}
      */
-    static final String FILTER_NAME = "preferMinimumResourceFilter";    // $NON-NLS-1$
+    static final String FILTER_NAME = "minifierResourceFilter";    // $NON-NLS-1$
     private DefaultMavenResourcesFiltering resourceFilter;
 
     @Requirement
     private BuildContext buildContext;
 
-    @Requirement(role = MavenFileFilter.class, hint = MinimumFileFilter.FILTER_NAME)
+    @Requirement(role = MavenFileFilter.class, hint = MinifierFileFilter.FILTER_NAME)
     private MavenFileFilter fileFilter;
 
     @Override
