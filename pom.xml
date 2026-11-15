@@ -20,7 +20,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.jiovan.maven</groupId>
+    <groupId>com.jiovan.maven.plugin</groupId>
     <artifactId>minifier-maven-plugin</artifactId>
     <version>4.0.0</version>
     <packaging>maven-plugin</packaging>
@@ -52,6 +52,8 @@
         <commons-io.version>2.22.0</commons-io.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <jakarta-annotation.version>3.0.0</jakarta-annotation.version>
+        <javax-inject.version>1</javax-inject.version>
+        <junit.version>6.0.3</junit.version>
         <maven-core.version>3.10.0</maven-core.version>
         <maven-filtering.version>3.5.1</maven-filtering.version>
         <maven-plugin-annotations.version>3.16.0</maven-plugin-annotations.version>
@@ -64,7 +66,9 @@
         <maven-plugin-plugin.version>3.15.1</maven-plugin-plugin.version>
         <maven-resources-plugin.version>3.5.0</maven-resources-plugin.version>
         <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
-        <plexus-component-metadata.version>2.2.0</plexus-component-metadata.version>
+        <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
+        <sisu-maven-plugin.version>1.1.2</sisu-maven-plugin.version>
+        <slf4j.version>2.0.18</slf4j.version>
         <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
         <central-publishing-maven-plugin.version>0.12.0</central-publishing-maven-plugin.version>
         <versions-maven-plugin.version>2.25.1</versions-maven-plugin.version>
@@ -85,6 +89,18 @@
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
             <version>${jakarta-annotation.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>${javax-inject.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -232,6 +248,12 @@
             <version>${plexus-utils.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -339,13 +361,19 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.plexus</groupId>
-                <artifactId>plexus-component-metadata</artifactId>
-                <version>${plexus-component-metadata.version}</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.sisu</groupId>
+                <artifactId>sisu-maven-plugin</artifactId>
+                <version>${sisu-maven-plugin.version}</version>
                 <executions>
                     <execution>
+                        <id>index-project</id>
                         <goals>
-                            <goal>generate-metadata</goal>
+                            <goal>main-index</goal>
                         </goals>
                     </execution>
                 </executions>

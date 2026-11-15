@@ -19,18 +19,16 @@ package com.jiovan.maven.plugin.minifier.filter;
 
 import java.util.Collections;
 import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.maven.shared.filtering.DefaultMavenResourcesFiltering;
 import org.apache.maven.shared.filtering.MavenFileFilter;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
 import org.apache.maven.shared.filtering.MavenResourcesFiltering;
-import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.logging.AbstractLogEnabled;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.Initializable;
 import org.sonatype.plexus.build.incremental.BuildContext;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -43,33 +41,21 @@ import jakarta.annotation.Nullable;
  *
  * @reference "https://maven.apache.org/plugins/maven-resources-plugin/examples/custom-resource-filters.html"
  */
-@Component(role = MavenResourcesFiltering.class, hint = MinifierResourceFilter.FILTER_NAME, description = "Packages minimum css/js resources instead of original ones")
+@Named(value = MinifierResourceFilter.FILTER_NAME)
+@Singleton
 @SuppressWarnings({"unused", "JavadocDeclaration", "JavadocLinkAsPlainText"})
-public class MinifierResourceFilter extends AbstractLogEnabled implements MavenResourcesFiltering, Initializable {
+public class MinifierResourceFilter implements MavenResourcesFiltering {
     /**
      * The value is {@code "minifierResourceFilter"}
      */
     static final String FILTER_NAME = "minifierResourceFilter";    // $NON-NLS-1$
-    private DefaultMavenResourcesFiltering resourceFilter;
+    private final DefaultMavenResourcesFiltering resourceFilter;
 
-    @Requirement
-    private BuildContext buildContext;
-
-    @Requirement(role = MavenFileFilter.class, hint = MinifierFileFilter.FILTER_NAME)
-    private MavenFileFilter fileFilter;
-
-    @Override
-    public void initialize() {
-        resourceFilter = new DefaultMavenResourcesFiltering(fileFilter, buildContext);
-        try {
-            FieldUtils.writeDeclaredField(resourceFilter, "buildContext", buildContext, true);    // $NON-NLS-1$
-            FieldUtils.writeDeclaredField(resourceFilter, "mavenFileFilter", fileFilter, true);    // $NON-NLS-1$
-        } catch (IllegalAccessException | IllegalArgumentException ex) {
-            getLogger().error(ex.getMessage(), ex);
-        }
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug("DefaultMavenResourcesFiltering delegator initialized complete");
-        }
+    @Inject
+    public MinifierResourceFilter(@Nonnull BuildContext buildContext, @Named(value = MinifierFileFilter.FILTER_NAME) @Nullable MavenFileFilter fileFilter) {
+        // The hint based lookup only resolves for maven-filtering 3.5.0+, older realms yield null
+        MavenFileFilter minifier = fileFilter != null ? fileFilter : new MinifierFileFilter(buildContext);
+        this.resourceFilter = new DefaultMavenResourcesFiltering(minifier, buildContext);
     }
 
     @Override
@@ -82,7 +68,7 @@ public class MinifierResourceFilter extends AbstractLogEnabled implements MavenR
     @Override
     public boolean filteredFileExtension(@Nonnull String fileName, @Nullable List<String> userNonFilteredFileExtensions) {
         String extension = FilenameUtils.getExtension(fileName);
-        return StringUtils.equalsAnyIgnoreCase(extension, "js", "css");    // $NON-NLS-1$ // $NON-NLS-2$
+        return Strings.CI.equalsAny(extension, "js", "css");    // $NON-NLS-1$ // $NON-NLS-2$
     }
 
     @Override

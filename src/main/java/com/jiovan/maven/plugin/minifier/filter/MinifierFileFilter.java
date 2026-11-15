@@ -19,14 +19,17 @@ package com.jiovan.maven.plugin.minifier.filter;
 
 import java.io.File;
 import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.maven.shared.filtering.ChangeDetection;
 import org.apache.maven.shared.filtering.DefaultMavenFileFilter;
 import org.apache.maven.shared.filtering.FilterWrapper;
-import org.apache.maven.shared.filtering.MavenFileFilter;
 import org.apache.maven.shared.filtering.MavenFilteringException;
-import org.codehaus.plexus.component.annotations.Component;
 import org.sonatype.plexus.build.incremental.BuildContext;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -39,7 +42,8 @@ import jakarta.annotation.Nullable;
  *
  * @reference "https://github.com/aperto/sourceurl-resourcefilter"
  */
-@Component(role = MavenFileFilter.class, hint = MinifierFileFilter.FILTER_NAME, description = "Packages minimum css/js files instead of original ones")
+@Named(value = MinifierFileFilter.FILTER_NAME)
+@Singleton
 @SuppressWarnings({"unused", "JavadocDeclaration", "JavadocLinkAsPlainText"})
 public class MinifierFileFilter extends DefaultMavenFileFilter {
     /**
@@ -49,31 +53,52 @@ public class MinifierFileFilter extends DefaultMavenFileFilter {
     private static final String DOT_MIN = ".min";    // $NON-NLS-1$
     private static final String HYPHEN_MIN = "-min";    // $NON-NLS-1$
 
+    @Inject
     public MinifierFileFilter(@Nonnull BuildContext context) {
         super(context);
     }
 
     @Override
-    public void copyFile(@Nonnull File from, @Nonnull File to, boolean filtering, @Nonnull List<FilterWrapper> filterWrappers, @Nullable String encoding) throws MavenFilteringException {
-        boolean copyFile = true;
-        String extension = FilenameUtils.getExtension(from.getName());
-        if (from.isFile() && StringUtils.equalsAnyIgnoreCase(extension, "js", "css")) {    // $NON-NLS-1$ // $NON-NLS-2$
-            String basename = FilenameUtils.getBaseName(from.getName());
-            if (!StringUtils.endsWithIgnoreCase(basename, DOT_MIN) && !StringUtils.endsWithIgnoreCase(basename, HYPHEN_MIN)) {
-                File dotFrom = new File(from.getParentFile(), StringUtils.join(basename, DOT_MIN, FilenameUtils.EXTENSION_SEPARATOR_STR, extension));
-                File minusFrom = new File(from.getParentFile(), StringUtils.join(basename, HYPHEN_MIN, FilenameUtils.EXTENSION_SEPARATOR_STR, extension));
-                try {
-                    if (FileUtils.directoryContains(from.getParentFile(), dotFrom) || FileUtils.directoryContains(from.getParentFile(), minusFrom)) {
-                        copyFile = false;
-                    }
-                } catch (Exception ignored) {
-                }
-            }
-        }
-        if (copyFile) {
-            super.copyFile(from, to, filtering, filterWrappers, encoding);
+    @SuppressWarnings("deprecation")
+    public void copyFile(@Nonnull File from, @Nonnull File to, boolean filtering, @Nonnull List<FilterWrapper> filterWrappers, @Nullable String encoding, boolean overwrite) throws MavenFilteringException {
+        if (shouldCopy(from)) {
+            super.copyFile(from, to, filtering, filterWrappers, encoding, overwrite);
         } else {
             FileUtils.deleteQuietly(to);
+        }
+    }
+
+    @Override
+    public void copyFile(@Nonnull File from, @Nonnull File to, boolean filtering, @Nonnull List<FilterWrapper> filterWrappers, @Nullable String encoding, @Nullable ChangeDetection changeDetection) throws MavenFilteringException {
+        if (shouldCopy(from)) {
+            super.copyFile(from, to, filtering, filterWrappers, encoding, changeDetection);
+        } else {
+            FileUtils.deleteQuietly(to);
+        }
+    }
+
+    /**
+     * Checks whether the original file has to be copied, that is there is no minified sibling
+     *
+     * @param from the original file
+     * @return {@code true} unless a {@code .min} or {@code -min} sibling of a css/js file exists
+     */
+    private static boolean shouldCopy(@Nonnull File from) {
+        String extension = FilenameUtils.getExtension(from.getName());
+        if (!from.isFile() || !Strings.CI.equalsAny(extension, "js", "css")) {    // $NON-NLS-1$ // $NON-NLS-2$
+            return true;
+        }
+        String basename = FilenameUtils.getBaseName(from.getName());
+        if (Strings.CI.endsWith(basename, DOT_MIN) || Strings.CI.endsWith(basename, HYPHEN_MIN)) {
+            return true;
+        }
+        File parent = from.getParentFile();
+        File dotFrom = new File(parent, StringUtils.join(basename, DOT_MIN, FilenameUtils.EXTENSION_SEPARATOR_STR, extension));
+        File minusFrom = new File(parent, StringUtils.join(basename, HYPHEN_MIN, FilenameUtils.EXTENSION_SEPARATOR_STR, extension));
+        try {
+            return !FileUtils.directoryContains(parent, dotFrom) && !FileUtils.directoryContains(parent, minusFrom);
+        } catch (Exception ignored) {
+            return true;
         }
     }
 }
