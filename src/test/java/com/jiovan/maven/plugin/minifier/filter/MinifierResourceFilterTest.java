@@ -110,6 +110,7 @@ class MinifierResourceFilterTest {
      * Prepares an inspectable output directory under {@code target/test-output}
      *
      * @param name the case name
+     *
      * @return the empty output directory
      */
     private Path outputDirectory(String name) throws Exception {

@@ -81,6 +81,7 @@ public class MinifierFileFilter extends DefaultMavenFileFilter {
      * Checks whether the original file has to be copied, that is there is no minified sibling
      *
      * @param from the original file
+     *
      * @return {@code true} unless a {@code .min} or {@code -min} sibling of a css/js file exists
      */
     private static boolean shouldCopy(@Nonnull File from) {

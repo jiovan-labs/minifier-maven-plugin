@@ -1,3 +1,5 @@
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md)
+
 # Minifier Maven Plugin
 
 Jiovan minifier-maven-plugin is a maven plugin, to filter resources, using minimum files instead of original ones.
